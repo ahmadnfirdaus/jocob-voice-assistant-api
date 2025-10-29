@@ -3,7 +3,7 @@ package com.jocob.voice.assistant.service;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.jocob.voice.assistant.dto.ResponseDTO;
-import jakarta.servlet.ServletContextListener;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.vosk.Model;
 import org.vosk.Recognizer;
@@ -11,17 +11,21 @@ import org.vosk.Recognizer;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.File;
-import java.net.URL;
+import java.io.IOException;
+import java.net.URISyntaxException;
 
+@RequiredArgsConstructor
 @Service
 public class SpeechToTextService {
 
-    public String transcribeOgg(File oggFile) throws Exception {
-        URL resource = ServletContextListener.class.getClassLoader().getResource("model");
-        System.out.println("Model path: " + resource.getPath());
+    private final ResourceExtractor resourceExtractor;
 
-        try (Model model = new Model(resource.getPath());
+    public String transcribeOgg(File oggFile) throws IOException, UnsupportedAudioFileException, URISyntaxException {
+        File modelDir = resourceExtractor.extractResourceDir("model");
+
+        try (Model model = new Model(modelDir.getAbsolutePath());
              AudioInputStream ais = AudioSystem.getAudioInputStream(oggFile)) {
 
             AudioFormat baseFormat = ais.getFormat();
