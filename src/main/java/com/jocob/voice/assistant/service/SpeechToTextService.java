@@ -1,5 +1,8 @@
 package com.jocob.voice.assistant.service;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.jocob.voice.assistant.dto.ResponseDTO;
 import org.springframework.stereotype.Service;
 import org.vosk.Model;
 import org.vosk.Recognizer;
@@ -13,7 +16,6 @@ import java.io.File;
 public class SpeechToTextService {
 
     public String transcribeOgg(File oggFile) throws Exception {
-        // Load Vosk model
         try (Model model = new Model("src/main/resources/model");
              AudioInputStream ais = AudioSystem.getAudioInputStream(oggFile)) {
 
@@ -36,7 +38,9 @@ public class SpeechToTextService {
                     recognizer.acceptWaveForm(buffer, bytesRead);
                 }
 
-                return recognizer.getFinalResult();
+                Gson gson = new GsonBuilder().disableHtmlEscaping().create();
+                ResponseDTO responseDTO = gson.fromJson(recognizer.getFinalResult(), ResponseDTO.class);
+                return responseDTO.getText();
             }
         }
     }
